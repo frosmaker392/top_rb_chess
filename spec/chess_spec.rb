@@ -1,8 +1,14 @@
+require './lib/chess.rb'
+
 describe ChessPiece do
   context "Initialise ChessPiece class" do
     it "initialises ChessPiece with notation and side" do
       cp = ChessPiece.new('K', 1)
       expect(cp.debug_str).to eql('K1')
+    end
+
+    it "raises error if wrong datatypes are used" do
+      expect{ ChessPiece.new('N', 1.5) }.to raise_error("Invalid datatypes!")
     end
   end
 end
