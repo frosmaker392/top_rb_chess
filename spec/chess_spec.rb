@@ -28,6 +28,18 @@ describe ChessData do
     end
   end
 
+  describe "#at" do
+    it "returns the ChessPiece at the specified position" do
+      cd = ChessData.new
+      expect(cd.at([0, 6]).debug_str).to eql('P1')
+    end
+
+    it "can return nil" do
+      cd = ChessData.new
+      expect(cd.at([3, 3])).to eql(nil)
+    end
+  end
+
   describe "#move_piece" do
     it "moves a piece from a point to another" do
       cd = ChessData.new

@@ -39,13 +39,18 @@ class ChessData
 
     return if x_f > 7 || x_f < 0 || y_f > 7 || y_f < 0
     return if x_t > 7 || x_t < 0 || y_t > 7 || y_t < 0
-    return if @grid[y_f][x_f].nil?
+    return if at(from).nil?
     
-    unless @grid[y_t][x_t].nil?
-      @captured << @grid[y_t][x_t]
+    unless at(to).nil?
+      @captured << at(to)
     end
-    @grid[y_t][x_t] = @grid[y_f][x_f]
+    @grid[y_t][x_t] = at(from)
     @grid[y_f][x_f] = nil
+  end
+
+  # Returns the element of gri
+  def at(position)
+    @grid[position[1]][position[0]]
   end
 
   def debug_str
@@ -53,8 +58,7 @@ class ChessData
 
     8.times do |y|
       8.times do |x|
-        cp = @grid[y][x]
-        out << (cp.nil? ? '  ' : cp.debug_str)
+        out << (at([x, y]).nil? ? '  ' : at([x, y]).debug_str)
       end
       out << "\n"
     end
