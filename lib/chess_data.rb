@@ -15,10 +15,13 @@ class ChessPiece
 
   public
 
+  # JSON Methods
+  # Returns the JSON string of the object
   def to_json(*options)
     as_json(*options).to_json(*options)
   end
 
+  # Returns a new ChessPiece using information in hash
   def ChessPiece.from_hash(hash)
     return if hash.nil?
 
@@ -86,14 +89,17 @@ class ChessData
   end
 
   # JSON methods
+  # Returns the JSON string of the object
   def to_json(*options)
     as_json(*options).to_json(*options)
   end
 
+  # Returns the prettier JSON string of the object
   def to_json_pretty
     JSON.pretty_generate(self)
   end
 
+  # Parses the JSON string into a new ChessData object
   def ChessData.from_json(json_str)
     hash = JSON.parse(json_str)
     return if hash["grid"].nil? || hash["captured"].nil?
