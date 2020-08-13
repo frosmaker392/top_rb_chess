@@ -5,15 +5,35 @@ class ChessPiece
   attr_reader :side       # White = 1, Black = 2 (cos white moves first for some reason)
   attr_reader :has_moved
 
-  def initialize(notation, side)
+  def initialize(notation, side, has_moved = false)
     raise "Invalid datatypes!" unless notation.is_a?(String) && side.is_a?(Integer)
 
     @notation = notation
     @side = side
-    @has_moved = false
+    @has_moved = has_moved
   end
 
   public
+
+  def to_json(*options)
+    as_json(*options).to_json(*options)
+  end
+
+  def ChessPiece.from_hash(hash)
+    return if hash.nil?
+
+    n = hash["notation"]
+    s = hash["side"]
+    h = hash["has_moved"]
+
+    ChessPiece.new(n, s, h)
+  end
+
+  def debug_str
+    @notation + @side.to_s
+  end
+
+  private
 
   def as_json(options={})
     {
@@ -22,25 +42,21 @@ class ChessPiece
       has_moved: @has_moved
     }
   end
-
-  def to_json(*options)
-    as_json(*options).to_json(*options)
-  end
-
-  def debug_str
-    @notation + @side.to_s
-  end
+  
 end
 
 class ChessData
   attr_reader :grid         # To access correctly : @grid[y][x] / @grid[col][row]
   attr_reader :captured
 
-  def initialize
-    @grid = Array.new(8) { Array.new(8) {nil} }
-    @captured = []
+  def initialize(grid = nil, captured = nil)
+    if grid.nil?
+      @grid = Array.new(8) { Array.new(8) {nil} }
+      generate_default_grid
+    else @grid = grid end
 
-    generate_default_grid
+    if captured.nil? then @captured = []
+    else @captured = captured end
   end
 
   public
@@ -64,20 +80,34 @@ class ChessData
     @grid[y_f][x_f] = nil
   end
 
-  # Returns the element of gri
+  # Returns the element of grid
   def at(position)
     @grid[position[1]][position[0]]
   end
 
-  def as_json(options={})
-    {
-      grid: @grid,
-      captured: @captured
-    }
-  end
-
+  # JSON methods
   def to_json(*options)
     as_json(*options).to_json(*options)
+  end
+
+  def to_json_pretty
+    JSON.pretty_generate(self)
+  end
+
+  def ChessData.from_json(json_str)
+    hash = JSON.parse(json_str)
+    return if hash["grid"].nil? || hash["captured"].nil?
+
+    new_grid = Array.new(8) { Array.new(8) }
+    8.times do |i|
+      8.times do |j|
+        new_grid[i][j] = ChessPiece.from_hash(hash["grid"][i][j])
+      end
+    end
+
+    new_captured = hash["captured"].map { |x| ChessPiece.from_hash(x) }
+
+    ChessData.new(new_grid, new_captured)
   end
 
   def debug_str
@@ -114,7 +144,11 @@ class ChessData
       @grid[-y][7] = ChessPiece.new('R', 2 - y)
     end
   end
-end
 
-cd = ChessData.new
-puts cd.to_json
+  def as_json(options={})
+    {
+      grid: @grid,
+      captured: @captured
+    }
+  end
+end
