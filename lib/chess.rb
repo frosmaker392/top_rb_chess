@@ -1,3 +1,5 @@
+require 'json'
+
 class ChessPiece
   attr_reader :notation
   attr_reader :side       # White = 1, Black = 2 (cos white moves first for some reason)
@@ -9,6 +11,20 @@ class ChessPiece
     @notation = notation
     @side = side
     @has_moved = false
+  end
+
+  public
+
+  def as_json(options={})
+    {
+      notation: @notation,
+      side: @side,
+      has_moved: @has_moved
+    }
+  end
+
+  def to_json(*options)
+    as_json(*options).to_json(*options)
   end
 
   def debug_str
@@ -53,6 +69,17 @@ class ChessData
     @grid[position[1]][position[0]]
   end
 
+  def as_json(options={})
+    {
+      grid: @grid,
+      captured: @captured
+    }
+  end
+
+  def to_json(*options)
+    as_json(*options).to_json(*options)
+  end
+
   def debug_str
     out = ""
 
@@ -88,3 +115,6 @@ class ChessData
     end
   end
 end
+
+cd = ChessData.new
+puts cd.to_json
