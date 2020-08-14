@@ -1,4 +1,4 @@
-require './lib/chess.rb'
+require './lib/chess_data.rb'
 
 describe ChessPiece do
   context "Initialise ChessPiece class" do
