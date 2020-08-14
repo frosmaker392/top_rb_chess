@@ -3,12 +3,12 @@ require './lib/chess_data.rb'
 describe ChessPiece do
   context "Initialise ChessPiece class" do
     it "initialises ChessPiece with notation and side" do
-      cp = ChessPiece.new('K', 1)
+      cp = ChessPiece.new('K', 1, [-1, -1])
       expect(cp.debug_str).to eql('K1')
     end
 
     it "raises error if wrong datatypes are used" do
-      expect{ ChessPiece.new('N', 1.5) }.to raise_error("Invalid datatypes!")
+      expect{ ChessPiece.new('N', 1.5, [-1, -1]) }.to raise_error("Invalid datatypes!")
     end
   end
 end
@@ -93,6 +93,29 @@ describe ChessData do
                                   "  P1P1P1P1P1P1P1\n"\
                                   "R1N1B1Q1K1B1N1R1\n")
     end
+
+    it "changes @position of the ChessPiece involved" do
+      cd = ChessData.new
+      expect(cd.at([0, 6]).position).to eql([0, 6])
+      cd.move_piece([0, 6], [0, 1])
+      expect(cd.at([0, 1]).position).to eql([0, 1])
+    end
+
+    it "sets @position of captured pieces to [-1, -1]" do
+      cd = ChessData.new
+      cd.move_piece([0, 0], [0, 7])
+      cd.move_piece([5, 6], [5, 1])
+      cd.captured.each do |piece|
+        expect(piece.position).to eql([-1, -1])
+      end
+    end
+
+    it "changes @has_moved to true" do
+      cd = ChessData.new
+      cd.move_piece([2, 1], [2, 3])
+      expect(cd.at([2, 3]).has_moved).to eql(true)
+    end
+
   end
 
   context "@captured array stores all captured pieces" do
