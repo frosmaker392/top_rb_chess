@@ -17,39 +17,9 @@ class ChessPiece
 
   public
 
-  # JSON Methods
-  # Returns the JSON string of the object
-  def to_json(*options)
-    as_json(*options).to_json(*options)
-  end
-
-  # Returns a new ChessPiece using information in hash
-  def ChessPiece.from_hash(hash)
-    return if hash.nil?
-
-    n = hash["notation"]
-    s = hash["side"]
-    p = hash["position"]
-    h = hash["has_moved"]
-
-    cp = ChessPiece.new(n, s, p, h)
-  end
-
   def debug_str
     @notation + @side.to_s
   end
-
-  private
-
-  def as_json(options={})
-    {
-      notation: @notation,
-      side: @side,
-      position: @position,
-      has_moved: @has_moved
-    }
-  end
-  
 end
 
 class ChessData
@@ -97,34 +67,6 @@ class ChessData
     @grid[position[1]][position[0]]
   end
 
-  # JSON methods
-  # Returns the JSON string of the object
-  def to_json(*options)
-    as_json(*options).to_json(*options)
-  end
-
-  # Returns the prettier JSON string of the object
-  def to_json_pretty
-    JSON.pretty_generate(self)
-  end
-
-  # Parses the JSON string into a new ChessData object
-  def ChessData.from_json(json_str)
-    hash = JSON.parse(json_str)
-    return if hash["grid"].nil? || hash["captured"].nil?
-
-    new_grid = Array.new(8) { Array.new(8) }
-    8.times do |i|
-      8.times do |j|
-        new_grid[i][j] = ChessPiece.from_hash(hash["grid"][i][j])
-      end
-    end
-
-    new_captured = hash["captured"].map { |x| ChessPiece.from_hash(x) }
-
-    ChessData.new(new_grid, new_captured)
-  end
-
   def debug_str
     out = ""
 
@@ -166,12 +108,5 @@ class ChessData
         @grid[y][x].position = [x, y]
       end
     end
-  end
-
-  def as_json(options={})
-    {
-      grid: @grid,
-      captured: @captured
-    }
   end
 end
