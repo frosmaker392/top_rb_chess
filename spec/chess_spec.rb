@@ -127,4 +127,20 @@ describe ChessData do
       expect(str).to eql("P2P2")
     end
   end
+
+  context "@moves array stored all moves since the default layout" do
+    it "stores a string in the form of '[from]-[to]' (no spaces)" do
+      cd = ChessData.new
+      cd.move_piece([2, 1], [2, 3])
+      expect(cd.moves).to eql(['21-23'])
+    end
+
+    it "stores multiple moves" do
+      cd = ChessData.new
+      cd.move_piece([2, 1], [2, 3])
+      cd.move_piece([1, 1], [1, 2])
+      cd.move_piece([5, 6], [5, 4])
+      expect(cd.moves).to eql(['21-23', '11-12', '56-54'])
+    end
+  end
 end

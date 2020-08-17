@@ -25,15 +25,14 @@ end
 class ChessData
   attr_reader :grid         # To access correctly : @grid[y][x] / @grid[col][row]
   attr_reader :captured
+  attr_reader :moves
 
-  def initialize(grid = nil, captured = nil)
-    if grid.nil?
-      @grid = Array.new(8) { Array.new(8) {nil} }
-      generate_default_grid
-    else @grid = grid end
+  def initialize()
+    @grid = Array.new(8) { Array.new(8) {nil} }
+    generate_default_grid
 
-    if captured.nil? then @captured = []
-    else @captured = captured end
+    @moves = []
+    @captured = []
   end
 
   public
@@ -60,6 +59,8 @@ class ChessData
     at(to).position = [x_t, y_t]
 
     @grid[y_f][x_f] = nil
+
+    @moves << "#{x_f}#{y_f}-#{x_t}#{y_t}"
   end
 
   # Returns the element of grid
