@@ -68,6 +68,39 @@ class ChessData
     @grid[position[1]][position[0]]
   end
 
+  def move_by_str(str)
+    raise "Invalid format for move string!" unless str.length == 5
+
+    rgx_match = str.match(/^[0-9]{2}-[0-9]{2}$/)
+    raise "Invalid format for move string!" if rgx_match.nil?
+
+    from = [str[0].to_i, str[1].to_i]
+    to = [str[3].to_i, str[4].to_i]
+    move_piece(from, to)
+  end
+  
+  def move_by_arr(arr)
+    arr.each do |move_str|
+      move_by_str(move_str)
+    end
+  end
+
+  # JSON Methods
+  def to_json(*options)
+    as_json(*options).to_json(*options)
+  end
+
+  def ChessData.from_json(json_str)
+    hash = JSON.parse(json_str)
+    puts hash
+    return if hash["moves"].nil?
+
+    cd = ChessData.new
+    cd.move_by_arr(hash["moves"])
+
+    cd
+  end
+
   def debug_str
     out = ""
 
@@ -109,5 +142,11 @@ class ChessData
         @grid[y][x].position = [x, y]
       end
     end
+  end
+
+  def as_json(options = {})
+    {
+      moves: @moves
+    }
   end
 end

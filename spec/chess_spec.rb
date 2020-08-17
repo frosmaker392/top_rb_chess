@@ -143,4 +143,63 @@ describe ChessData do
       expect(cd.moves).to eql(['21-23', '11-12', '56-54'])
     end
   end
+
+  describe "#move_by_str" do
+    it "parses a move string into from and to coords and moves the pieces" do
+      cd = ChessData.new
+      cd.move_by_str("16-14")
+      expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                  "P2P2P2P2P2P2P2P2\n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "  P1            \n"\
+                                  "                \n"\
+                                  "P1  P1P1P1P1P1P1\n"\
+                                  "R1N1B1Q1K1B1N1R1\n")
+    end
+
+    it "moves pieces successively" do
+      cd = ChessData.new
+      cd.move_by_str("30-54")
+      cd.move_by_str("07-05")
+      expect(cd.debug_str).to eql("R2N2B2  K2B2N2R2\n"\
+                                  "P2P2P2P2P2P2P2P2\n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "          Q2    \n"\
+                                  "R1              \n"\
+                                  "P1P1P1P1P1P1P1P1\n"\
+                                  "  N1B1Q1K1B1N1R1\n")
+    end
+
+    it "raises error if string has the wrong length" do
+      cd = ChessData.new
+      expect{ cd.move_by_str('1234') }.to raise_error("Invalid format for move string!")
+    end
+
+    it "raises error if string is in wrong format" do
+      cd = ChessData.new
+      expect{ cd.move_by_str('1-234') }.to raise_error("Invalid format for move string!")
+    end
+
+    it "raises error if string has a different separator than \'-\'" do
+      cd = ChessData.new
+      expect{ cd.move_by_str('12_34') }.to raise_error("Invalid format for move string!")
+    end
+  end
+
+  describe "#move_by_arr" do
+    it "moves pieces one-by-one successively according to the array" do
+      cd = ChessData.new
+      cd.move_by_arr(['46-44', '41-43', '67-55', '10-22', '57-13', '01-02'])
+      expect(cd.debug_str).to eql("R2  B2Q2K2B2N2R2\n"\
+                                  "  P2P2P2  P2P2P2\n"\
+                                  "P2  N2          \n"\
+                                  "  B1    P2      \n"\
+                                  "        P1      \n"\
+                                  "          N1    \n"\
+                                  "P1P1P1P1  P1P1P1\n"\
+                                  "R1N1B1Q1K1    R1\n")
+    end
+  end
 end
