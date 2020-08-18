@@ -4,15 +4,15 @@ class ChessPiece
   attr_reader :notation
   attr_reader :side       # White = 1, Black = 2 (cos white moves first for some reason)
   attr_accessor :position
-  attr_accessor :has_moved
+  attr_accessor :num_of_moves
 
-  def initialize(notation, side, position, has_moved = false)
+  def initialize(notation, side, position)
     raise "Invalid datatypes!" unless notation.is_a?(String) && side.is_a?(Integer)
 
     @notation = notation
     @side = side
     @position = position
-    @has_moved = has_moved
+    @num_of_moves = 0
   end
 
   public
@@ -49,18 +49,23 @@ class ChessData
     return if x_t > 7 || x_t < 0 || y_t > 7 || y_t < 0
     return if at(from).nil?
     
-    unless at(to).nil?
-      @captured << at(to)
-      at(to).position = [-1, -1]
-    end
+    capture(at(to)) unless at(to).nil?
     
     @grid[y_t][x_t] = at(from)
-    at(to).has_moved = true
+    at(to).num_of_moves += 1
     at(to).position = [x_t, y_t]
 
     @grid[y_f][x_f] = nil
 
     @moves << "#{x_f}#{y_f}-#{x_t}#{y_t}"
+  end
+
+  def capture(piece)
+    pos = piece.position
+    @grid[pos[1]][pos[0]] = nil
+
+    @captured << piece
+    piece.position = [-1, -1]
   end
 
   # Returns the element of grid

@@ -109,13 +109,31 @@ describe ChessData do
         expect(piece.position).to eql([-1, -1])
       end
     end
-
-    it "changes @has_moved to true" do
+    
+    it "increments @num_of_moves variable of piece by 1" do
       cd = ChessData.new
-      cd.move_piece([2, 1], [2, 3])
-      expect(cd.at([2, 3]).has_moved).to eql(true)
-    end
+      cd.move_piece([0, 1], [0, 2])
+      cd.move_piece([0, 2], [0, 3])
+      cd.move_piece([0, 3], [0, 4])
 
+      expect(cd.at([0, 0]).num_of_moves).to eql(0)
+      expect(cd.at([0, 4]).num_of_moves).to eql(3)
+    end
+  end
+
+  describe "#capture(piece)" do
+    it "captures a piece by emptying the square it's occupying" do
+      cd = ChessData.new
+      cd.capture(cd.at([0, 0]))
+      expect(cd.debug_str).to eql("  N2B2Q2K2B2N2R2\n"\
+                                  "P2P2P2P2P2P2P2P2\n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "P1P1P1P1P1P1P1P1\n"\
+                                  "R1N1B1Q1K1B1N1R1\n")
+    end
   end
 
   context "@captured array stores all captured pieces" do
