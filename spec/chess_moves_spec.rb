@@ -43,36 +43,76 @@ describe ChessMoves do
         cm = ChessMoves.new(ChessData.new)
 
         context "... that has not moved" do
-
+          cm.evaluate_moves
+          expect(cm.possible_moves_at([5, 1])).to eql([[5, 2], [5, 3]])
         end
 
         context "... that has moved" do
-
+          cm.data.move_piece([2, 6], [2, 5])
+          cm.evaluate_moves
+          expect(cm.possible_moves_at([2, 5])).to eql([[2, 4]])
         end
 
         context "... with an enemy piece on the front-diagonal adjacent square" do
-
+          cm.data.move_piece([2, 6], [2, 4])
+          cm.data.move_piece([1, 1], [1, 3])
+          cm.evaluate_moves
+          expect(cm.possible_moves_at([2, 4])).to eql([[2, 3], [1, 3]])
         end
       end
 
       context "... of a knight" do
-
+        cm = ChessMoves.new(ChessData.new)
+        cm.data.move_piece([1, 0], [3, 3])
+        cm.data.move_piece([6, 7], [4, 4])
+        cm.evaluate_moves
+        
+        expect(cm.possible_moves_at([3, 3]).sort).to eql([[1,2], [1,4], [2,5], [4,5], 
+                                                          [5,2], [5,4]])
+        expect(cm.possible_moves_at([4, 4]).sort).to eql([[2,3], [2,5], [3,2], [5,2], 
+                                                          [6,3], [6,5]])
       end
 
       context "... of a bishop" do
+        cm = ChessMoves.new(ChessData.new)
+        cm.data.move_piece([2, 7], [4, 3])
+        cm.evaluate_moves
 
+        expect(cm.possible_moves_at([4, 3]).sort).to eql([[2,1], [2,5], [3,2], [3,4], 
+                                                          [5,2], [5,4], [6,1], [6,5]])
       end
 
       context "... of a rook" do
+        cm = ChessMoves.new(ChessData.new)
+        cm.data.move_piece([0, 0], [2, 3])
+        cm.evaluate_moves
 
+        expect(cm.possible_moves_at([2, 3]).sort).to eql([[0,3], [1,3], [2,2], [2,4],
+                                                          [2,5], [2,6], [3,3], [4,3], 
+                                                          [5,3], [6,3], [7,3]])
       end
 
       context "... of a queen" do
+        cm = ChessMoves.new(ChessData.new)
+        cm.data.move_piece([3,7], [5,3])
+        cm.evaluate_moves
 
+        expect(cm.possible_moves_at([5, 3]).sort).to eql([[0,3], [1,3], [2,3], [3,1], 
+                                                          [3,3], [3,5], [4,2], [4,3], 
+                                                          [4,4], [5,1], [5,2], [5,4], 
+                                                          [5,5], [6,2], [6,3], [6,4], 
+                                                          [7,1], [7,3], [7,5]])
       end
 
       context "... of a king" do
+        cm = ChessMoves.new(ChessData.new)
+        cm.data.move_piece([4, 7], [4, 4])
+        cm.data.move_piece([4, 6], [4, 5])
+        cm.data.move_piece([3, 1], [3, 3])
+        cm.evallate_moves
 
+        expect(cm.possible_moves_at([4, 4]).sort).to eql([[3,3], [3,4], [3,5], [4,3], 
+                                                          [5,3], [5,4], [5,5]])
       end
     end
 
