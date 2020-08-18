@@ -1,0 +1,3 @@
+class ChessMoves
+  
+end
