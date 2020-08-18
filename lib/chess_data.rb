@@ -4,7 +4,7 @@ class ChessPiece
   attr_reader :notation
   attr_reader :side       # White = 1, Black = 2 (cos white moves first for some reason)
   attr_accessor :position
-  attr_accessor :num_of_moves
+  attr_accessor :num_of_moves   # Records number of moves it has underwent
 
   def initialize(notation, side, position)
     raise "Invalid datatypes!" unless notation.is_a?(String) && side.is_a?(Integer)
@@ -60,6 +60,8 @@ class ChessData
     @moves << "#{x_f}#{y_f}-#{x_t}#{y_t}"
   end
 
+  # Pushes a piece to the captured array and sets the grid element at that position
+  # to nil
   def capture(piece)
     pos = piece.position
     @grid[pos[1]][pos[0]] = nil
@@ -73,6 +75,7 @@ class ChessData
     @grid[position[1]][position[0]]
   end
 
+  # Executes a move according to str with format "[x_from][y_from]-[x_to][y_to]"
   def move_by_str(str)
     raise "Invalid format for move string!" unless str.length == 5
 
