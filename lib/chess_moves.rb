@@ -51,7 +51,37 @@ class ChessMoves
   # Individual evaluation methods for each piece type
   # Each returns an array of possible moves
   def eval_pawn(piece)
-    []
+    pos = piece.position
+    out = []
+
+    offset = piece.side == 2 ? 1 : -1
+    p1 = [pos[0], pos[1] + offset]
+    out << p1 if is_within_board?(p1) && @data.at(p1).nil?
+
+    # Can move forward two positions if pawn hasn't moved
+    if piece.num_of_moves == 0
+      p2 = [pos[0], pos[1] + offset * 2]
+      out << p2 if @data.at(p2).nil?
+    end
+
+    # When an enemy piece is at the front-right/left of the pawn
+    # (right as in relative to the board)
+    fr = [pos[0] + 1, pos[1] + offset]
+    fl = [pos[0] - 1, pos[1] + offset]
+
+    if is_within_board?(fr) && !@data.at(fr).nil?
+      if @data.at(fr).side != piece.side
+        out << fr
+      end
+    end
+
+    if is_within_board?(fl) && !@data.at(fl).nil?
+      if @data.at(fl).side != piece.side
+        out << fl
+      end
+    end
+
+    out
   end
 
   def eval_knight(piece)
@@ -72,5 +102,10 @@ class ChessMoves
 
   def eval_king(piece)
     []
+  end
+
+  # Returns true if position is within bounds of the grid
+  def is_within_board?(position)
+    position[0] > -1 && position[0] < 8 && position[1] > -1 && position[1] < 8
   end
 end
