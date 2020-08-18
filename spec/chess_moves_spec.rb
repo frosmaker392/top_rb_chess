@@ -42,18 +42,18 @@ describe ChessMoves do
       context "... of a pawn" do
         cm = ChessMoves.new(ChessData.new)
 
-        context "... that has not moved" do
+        it "... that has not moved" do
           cm.evaluate_moves
           expect(cm.possible_moves_at([5, 1])).to eql([[5, 2], [5, 3]])
         end
 
-        context "... that has moved" do
+        it "... that has moved" do
           cm.data.move_piece([2, 6], [2, 5])
           cm.evaluate_moves
           expect(cm.possible_moves_at([2, 5])).to eql([[2, 4]])
         end
 
-        context "... with an enemy piece on the front-diagonal adjacent square" do
+        it "... with an enemy piece on the front-diagonal adjacent square" do
           cm.data.move_by_arr(['26-24', '11-13'])
           cm.data.move_piece([2, 6], [2, 4])
           cm.data.move_piece([1, 1], [1, 3])
@@ -62,7 +62,7 @@ describe ChessMoves do
         end
       end
 
-      context "... of a knight" do
+      it "... of a knight" do
         cm = ChessMoves.new(ChessData.new)
         cm.data.move_by_arr(['10-33', '67-44'])
         cm.evaluate_moves
@@ -73,7 +73,7 @@ describe ChessMoves do
                                                           [6,3], [6,5]])
       end
 
-      context "... of a bishop" do
+      it "... of a bishop" do
         cm = ChessMoves.new(ChessData.new)
         cm.data.move_piece([2, 7], [4, 3])
         cm.evaluate_moves
@@ -82,7 +82,7 @@ describe ChessMoves do
                                                           [5,2], [5,4], [6,1], [6,5]])
       end
 
-      context "... of a rook" do
+      it "... of a rook" do
         cm = ChessMoves.new(ChessData.new)
         cm.data.move_piece([0, 0], [2, 3])
         cm.evaluate_moves
@@ -92,7 +92,7 @@ describe ChessMoves do
                                                           [5,3], [6,3], [7,3]])
       end
 
-      context "... of a queen" do
+      it "... of a queen" do
         cm = ChessMoves.new(ChessData.new)
         cm.data.move_piece([3,7], [5,3])
         cm.evaluate_moves
@@ -104,7 +104,7 @@ describe ChessMoves do
                                                           [7,1], [7,3], [7,5]])
       end
 
-      context "... of a king" do
+      it "... of a king" do
         cm = ChessMoves.new(ChessData.new)
         cm.data.move_by_arr(['47-44', '46-45', '31-33'])
         cm.evaluate_moves
