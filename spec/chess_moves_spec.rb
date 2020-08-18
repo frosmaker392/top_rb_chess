@@ -54,6 +54,7 @@ describe ChessMoves do
         end
 
         context "... with an enemy piece on the front-diagonal adjacent square" do
+          cm.data.move_by_arr(['26-24', '11-13'])
           cm.data.move_piece([2, 6], [2, 4])
           cm.data.move_piece([1, 1], [1, 3])
           cm.evaluate_moves
@@ -63,8 +64,7 @@ describe ChessMoves do
 
       context "... of a knight" do
         cm = ChessMoves.new(ChessData.new)
-        cm.data.move_piece([1, 0], [3, 3])
-        cm.data.move_piece([6, 7], [4, 4])
+        cm.data.move_by_arr(['10-33', '67-44'])
         cm.evaluate_moves
         
         expect(cm.possible_moves_at([3, 3]).sort).to eql([[1,2], [1,4], [2,5], [4,5], 
@@ -106,10 +106,8 @@ describe ChessMoves do
 
       context "... of a king" do
         cm = ChessMoves.new(ChessData.new)
-        cm.data.move_piece([4, 7], [4, 4])
-        cm.data.move_piece([4, 6], [4, 5])
-        cm.data.move_piece([3, 1], [3, 3])
-        cm.evallate_moves
+        cm.data.move_by_arr(['47-44', '46-45', '31-33'])
+        cm.evaluate_moves
 
         expect(cm.possible_moves_at([4, 4]).sort).to eql([[3,3], [3,4], [3,5], [4,3], 
                                                           [5,3], [5,4], [5,5]])
