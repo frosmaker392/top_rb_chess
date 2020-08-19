@@ -204,6 +204,20 @@ describe ChessData do
       cd = ChessData.new
       expect{ cd.move_by_str('12_34') }.to raise_error("Invalid format for move string!")
     end
+
+    it "executes a capture if the string has the format 'x[pos]'" do
+      cd = ChessData.new
+      cd.move_by_str("x61")
+      cd.move_by_str("x77")
+      expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                  "P2P2P2P2P2P2  P2\n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "P1P1P1P1P1P1P1P1\n"\
+                                  "R1N1B1Q1K1B1N1  \n")
+    end
   end
 
   describe "#move_by_arr" do
@@ -218,6 +232,41 @@ describe ChessData do
                                   "          N1    \n"\
                                   "P1P1P1P1  P1P1P1\n"\
                                   "R1N1B1Q1K1    R1\n")
+    end
+  end
+
+  context "JSON serialization" do
+    it "can serialize the @moves variable into JSON and rebuild the ChessData object from the JSON" do
+      cd = ChessData.new
+      cd.move_by_arr(['46-44', '41-43', '67-55', '10-22', '57-13', '01-02'])
+      json_str = cd.to_json
+
+      cd2 = ChessData.from_json(json_str)
+      expect(cd2.debug_str).to eql("R2  B2Q2K2B2N2R2\n"\
+                                  "  P2P2P2  P2P2P2\n"\
+                                  "P2  N2          \n"\
+                                  "  B1    P2      \n"\
+                                  "        P1      \n"\
+                                  "          N1    \n"\
+                                  "P1P1P1P1  P1P1P1\n"\
+                                  "R1N1B1Q1K1    R1\n")
+    end
+
+    it "serializes captures correctly" do
+      cd = ChessData.new
+      cd.capture(cd.at([6, 1]))
+      cd.capture(cd.at([7, 7]))
+      json_str = cd.to_json
+
+      cd2 = ChessData.from_json(json_str)
+      expect(cd2.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                  "P2P2P2P2P2P2  P2\n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "P1P1P1P1P1P1P1P1\n"\
+                                  "R1N1B1Q1K1B1N1  \n")
     end
   end
 end

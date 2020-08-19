@@ -49,7 +49,7 @@ class ChessData
     return if x_t > 7 || x_t < 0 || y_t > 7 || y_t < 0
     return if at(from).nil?
     
-    capture(at(to)) unless at(to).nil?
+    capture(at(to), false) unless at(to).nil?
     
     @grid[y_t][x_t] = at(from)
     at(to).num_of_moves += 1
@@ -61,13 +61,15 @@ class ChessData
   end
 
   # Pushes a piece to the captured array and sets the grid element at that position
-  # to nil
-  def capture(piece)
+  # to nil. If explicit is true it records the capture as a move ('x[pos]')
+  def capture(piece, explicit = true)
     pos = piece.position
     @grid[pos[1]][pos[0]] = nil
 
     @captured << piece
     piece.position = [-1, -1]
+
+    @moves << "x#{pos[0]}#{pos[1]}" if explicit
   end
 
   # Returns the element of grid
@@ -77,14 +79,18 @@ class ChessData
 
   # Executes a move according to str with format "[x_from][y_from]-[x_to][y_to]"
   def move_by_str(str)
-    raise "Invalid format for move string!" unless str.length == 5
+    rgx_match_move = str.match(/^[0-7]{2}-[0-7]{2}$/)
+    rgx_match_cap = str.match(/^x[0-7]{2}$/)
+    raise "Invalid format for move string!" if rgx_match_move.nil? && rgx_match_cap.nil?
 
-    rgx_match = str.match(/^[0-9]{2}-[0-9]{2}$/)
-    raise "Invalid format for move string!" if rgx_match.nil?
-
-    from = [str[0].to_i, str[1].to_i]
-    to = [str[3].to_i, str[4].to_i]
-    move_piece(from, to)
+    unless rgx_match_move.nil?
+      from = [str[0].to_i, str[1].to_i]
+      to = [str[3].to_i, str[4].to_i]
+      move_piece(from, to)
+    else
+      pos = [str[1].to_i, str[2].to_i]
+      capture(at(pos))
+    end
   end
   
   def move_by_arr(arr)
@@ -100,7 +106,6 @@ class ChessData
 
   def ChessData.from_json(json_str)
     hash = JSON.parse(json_str)
-    puts hash
     return if hash["moves"].nil?
 
     cd = ChessData.new
