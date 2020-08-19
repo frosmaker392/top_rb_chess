@@ -58,6 +58,26 @@ describe ChessMoves do
           cm.evaluate_moves
           expect(cm.possible_moves_at([2, 4])).to eql([[2, 3], [1, 3]])
         end
+
+        cm2 = ChessMoves.new(ChessData.new)
+
+        it "with two enemy pieces adjacent to it" do
+          cm2.data.move_by_arr(['10-43', '61-63', '56-54'])
+          cm2.evaluate_moves
+          expect(cm2.possible_moves_at([5, 4]).sort).to eql([[4, 3], [5, 3], [6, 3]])
+        end
+
+        it "with a piece blocking it directly" do
+          cm2.data.move_by_str("17-25")
+          cm2.evaluate_moves
+          expect(cm2.possible_moves_at([2, 6])).to eql([])
+        end
+
+        it "with a friendly piece at its front-diagonal-adjacent square" do
+          cm2.data.move_by_arr(['31-32', '27-23'])
+          cm2.evaluate_moves
+          expect(cm2.possible_moves_at([3, 2]).sort).to eql([[2, 3], [3, 3]])
+        end
       end
 
       it "of a knight" do

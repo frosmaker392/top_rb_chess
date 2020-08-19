@@ -54,31 +54,25 @@ class ChessMoves
     pos = piece.position
     out = []
 
+    max_step = piece.num_of_moves == 0 ? 2 : 1
     offset = piece.side == 2 ? 1 : -1
-    p1 = [pos[0], pos[1] + offset]
-    out << p1 if is_within_board?(p1) && @data.at(p1).nil?
+    
+    max_step.times do |i|
+      p = [pos[0], pos[1] + offset * (i + 1)]
 
-    # Can move forward two positions if pawn hasn't moved
-    if piece.num_of_moves == 0
-      p2 = [pos[0], pos[1] + offset * 2]
-      out << p2 if @data.at(p2).nil?
+      break unless is_within_board?(p) && @data.at(p).nil?
+      out << p
     end
 
-    # When an enemy piece is at the front-right/left of the pawn
-    # (right as in relative to the board)
-    fr = [pos[0] + 1, pos[1] + offset]
-    fl = [pos[0] - 1, pos[1] + offset]
+    # Evaluation for a possible diagonal-adjacent capture of the pawn
+    # fda - front-diagonal-adjacent (sorry i don't know a more concise term for that)
+    fda_pos = [[pos[0] + 1, pos[1] + offset], [pos[0] - 1, pos[1] + offset]]
 
-    if is_within_board?(fr) && !@data.at(fr).nil?
-      if @data.at(fr).side != piece.side
-        out << fr
-      end
-    end
+    fda_pos.each do |p|
+      next unless is_within_board?(p) && !@data.at(p).nil?
+      next if @data.at(p).side == piece.side
 
-    if is_within_board?(fl) && !@data.at(fl).nil?
-      if @data.at(fl).side != piece.side
-        out << fl
-      end
+      out << p
     end
 
     out
