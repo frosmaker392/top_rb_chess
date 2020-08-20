@@ -98,15 +98,33 @@ class ChessMoves
   end
 
   def eval_bishop(piece)
-    []
+    out = []
+
+    @offsets_bishop.each do |offset|
+      out += eval_traversal_from_by(piece, offset)
+    end
+
+    out
   end
 
   def eval_rook(piece)
-    []
+    out = []
+
+    @offsets_rook.each do |offset|
+      out += eval_traversal_from_by(piece, offset)
+    end
+
+    out
   end
 
   def eval_queen(piece)
-    []
+    out = []
+
+    @offsets_queen.each do |offset|
+      out += eval_traversal_from_by(piece, offset)
+    end
+
+    out
   end
 
   def eval_king(piece)
@@ -118,6 +136,27 @@ class ChessMoves
       next unless is_within_board?(target_pos)
 
       out << target_pos if can_move_to?(target_pos, piece.side)
+    end
+
+    out
+  end
+
+  # Traverses from piece by offset, pushing the position it's at into an array
+  # until the position cannot be moved to (can_move_to becomes false) or
+  # the position before is occupied.
+  # Returns the array of positions it traversed
+  def eval_traversal_from_by(piece, offset)
+    out = []
+    pos_current = [piece.position[0] + offset[0], piece.position[1] + offset[1]]
+    pos_before = nil
+
+    while can_move_to?(pos_current, piece.side)
+      out << pos_current
+
+      pos_before = pos_current
+      pos_current = [pos_current[0] + offset[0], pos_current[1] + offset[1]]
+
+      break unless @data.at(pos_before).nil?
     end
 
     out
