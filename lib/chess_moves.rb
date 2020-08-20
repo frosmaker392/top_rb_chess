@@ -8,6 +8,11 @@ class ChessMoves
     @data = chess_data
     @possible_moves = Hash.new([])
     @possible_moves[nil] = nil
+
+    @offsets_knight = mirror_to_all_quadrants([[1, 2], [2, 1]])
+    @offsets_bishop = mirror_to_all_quadrants([[1, 1]])
+    @offsets_rook = mirror_to_all_quadrants([[0, 1], [1, 0]])
+    @offsets_queen = mirror_to_all_quadrants([[0, 1], [1, 0], [1, 1]])
   end
 
   public
@@ -79,7 +84,17 @@ class ChessMoves
   end
 
   def eval_knight(piece)
-    []
+    pos = piece.position
+    out = []
+    
+    @offsets_knight.each do |offset|
+      target_pos = [pos[0] + offset[0], pos[1] + offset[1]]
+      next unless is_within_board?(target_pos)
+
+      out << target_pos if can_move_to?(target_pos, piece.side)
+    end
+
+    out
   end
 
   def eval_bishop(piece)
@@ -95,7 +110,39 @@ class ChessMoves
   end
 
   def eval_king(piece)
-    []
+    pos = piece.position
+    out = []
+    
+    @offsets_queen.each do |offset|
+      target_pos = [pos[0] + offset[0], pos[1] + offset[1]]
+      next unless is_within_board?(target_pos)
+
+      out << target_pos if can_move_to?(target_pos, piece.side)
+    end
+
+    out
+  end
+
+  # Mirrors all positions in the array to all quadrants,
+  # e.g : [[1, 1]] => [[1, 1], [-1, 1], [1, -1], [-1, -1]].
+  # Returns all the mirrored coordinates plus the original coordinates in an array
+  def mirror_to_all_quadrants(pos_arr)
+    set = pos_arr.to_set
+    pos_arr.each do |pos|
+      set.add([-pos[0], pos[1]])
+      set.add([pos[0], -pos[1]])
+      set.add([-pos[0], -pos[1]])
+    end
+
+    set.to_a
+  end
+
+  # Is the position empty/Does it have an enemy piece? (for all pieces other than pawn)
+  def can_move_to?(position, piece_side)
+    return false unless is_within_board?(position)
+    return true if @data.at(position).nil?
+    return true unless @data.at(position).side == piece_side
+    false
   end
 
   # Returns true if position is within bounds of the grid
