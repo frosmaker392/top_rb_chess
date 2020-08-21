@@ -134,17 +134,19 @@ describe ChessMoves do
     
     context "en-passant (pawn) :" do
       cd = ChessData.new
-      cd.move_by_arr(['11-13', '13-14', '16-15', '26-24'])
-      cd.move_by_arr(['61-62', '62-63', '56-54', '54-53'])
-
       cm = ChessMoves.new(cd)
-      cm.evaluate_moves
 
-      it "positive for a pawn that has jumped two squares in a move" do  
-        expect(cm.possible_moves_at([1, 4]).include?([2, 5])).to be true
+      it "positive for a pawn that has jumped two squares in a move" do
+        cd.move_by_arr(['11-13', '13-14', '16-15', '26-24'])
+        cm.evaluate_moves
+
+        expect(cm.possible_moves_at([1, 4]).sort).to eql([[2,5]])
       end
 
       it "negative for a pawn that has moved by two in two moves" do
+        cd.move_by_arr(['56-54', '54-53', '61-62', '62-63'])
+        cm.evaluate_moves
+
         expect(cm.possible_moves_at([5, 3]).include?([6, 2])).to be false
       end
     end
