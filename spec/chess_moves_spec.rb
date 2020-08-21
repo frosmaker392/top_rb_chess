@@ -131,67 +131,21 @@ describe ChessMoves do
                                                           [5,3], [5,4], [5,5]])
       end
     end
+    
+    context "en-passant (pawn) :" do
+      cd = ChessData.new
+      cd.move_by_arr(['11-13', '13-14', '16-15', '26-24'])
+      cd.move_by_arr(['61-62', '62-63', '56-54', '54-53'])
 
-    context "also includes special moves" do
-      context "- en-passant (pawn) :" do
-        cd = ChessData.new
-        cd.move_by_arr(['11-13', '13-14', '16-15', '26-24'])
-        cd.move_by_arr(['61-62', '62-63', '56-54', '54-53'])
+      cm = ChessMoves.new(cd)
+      cm.evaluate_moves
 
-        cm = ChessMoves.new(cd)
-        cm.evaluate_moves
-
-        it "positive for a pawn that has jumped two squares in a move" do  
-          expect(cm.possible_moves_at([1, 4]).include?([2, 5])).to be true
-        end
-
-        it "negative for a pawn that has moved by two in two moves" do
-          expect(cm.possible_moves_at([5, 3]).include?([6, 2])).to be false
-        end
+      it "positive for a pawn that has jumped two squares in a move" do  
+        expect(cm.possible_moves_at([1, 4]).include?([2, 5])).to be true
       end
 
-      context "- castling (king) :" do
-        it "king-side" do
-          cd = ChessData.new
-          cd.move_by_arr(['41-42', '50-23', '60-72'])
-
-          cm = ChessMoves.new(cd)
-          cm.evaluate_moves
-
-          expect(cm.possible_moves_at([4, 0]).include?([6, 0])).to be true
-        end
-
-        it "queen-side" do
-          cd = ChessData.new
-          cd.move_by_arr(['46-44', '36-35', '27-45', '17-05', '37-73'])
-
-          cm = ChessMoves.new(cd)
-          cm.evaluate_moves
-
-          expect(cm.possible_moves_at([4, 7]).include?([2, 7])).to be true
-        end
-
-        it "both king- and queen-side" do
-          cd = ChessData.new
-          cd.move_by_arr(['41-42', '50-23', '60-72', '21-22', '30-03', '11-12', '31-33'])
-          cd.move_by_arr(['10-31', '20-02'])
-
-          cm = ChessMoves.new(cd)
-          cm.evaluate_moves
-
-          expect(cm.possible_moves_at([4, 0]).include?([6, 0])).to be true
-          expect(cm.possible_moves_at([4, 0]).include?([2, 0])).to be true
-        end
-
-        it "negative for a piece blocking the castling move" do
-          cd = ChessData.new
-          cd.move_by_arr(['46-44', '36-35', '27-45', '17-05'])
-
-          cm = ChessMoves.new(cd)
-          cm.evaluate_moves
-
-          expect(cm.possible_moves_at([4, 7]).include?([2, 7])).to be false
-        end
+      it "negative for a pawn that has moved by two in two moves" do
+        expect(cm.possible_moves_at([5, 3]).include?([6, 2])).to be false
       end
     end
   end
