@@ -131,18 +131,23 @@ describe ChessMoves do
                                                           [5,3], [5,4], [5,5]])
       end
     end
+    
+    context "en-passant (pawn) :" do
+      cd = ChessData.new
+      cm = ChessMoves.new(cd)
 
-    context "also includes special moves" do
-      it "pawn : en-passant" do
+      it "positive for a pawn that has jumped two squares in a move" do
+        cd.move_by_arr(['11-13', '13-14', '16-15', '26-24'])
+        cm.evaluate_moves
 
+        expect(cm.possible_moves_at([1, 4]).sort).to eql([[2,5]])
       end
 
-      it "king : king-side castling" do
+      it "negative for a pawn that has moved by two in two moves" do
+        cd.move_by_arr(['56-54', '54-53', '61-62', '62-63'])
+        cm.evaluate_moves
 
-      end
-
-      it "king : queen-side castling" do
-
+        expect(cm.possible_moves_at([5, 3]).include?([6, 2])).to be false
       end
     end
   end

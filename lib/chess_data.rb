@@ -26,6 +26,7 @@ class ChessData
   attr_reader :grid         # To access correctly : @grid[y][x] / @grid[col][row]
   attr_reader :captured
   attr_reader :moves
+  attr_reader :en_passant_vulnerable    # Denotes the piece that is vulnerable to an en-passant move
 
   def initialize()
     @grid = Array.new(8) { Array.new(8) {nil} }
@@ -48,6 +49,12 @@ class ChessData
     return if x_f > 7 || x_f < 0 || y_f > 7 || y_f < 0
     return if x_t > 7 || x_t < 0 || y_t > 7 || y_t < 0
     return if at(from).nil?
+
+    @en_passant_vulnerable = nil
+    if y_f == 1 && y_t == 3 || y_f == 6 && y_t == 4
+      piece = at(from)
+      @en_passant_vulnerable = piece if piece.notation == 'P'
+    end
     
     capture(at(to), false) unless at(to).nil?
     

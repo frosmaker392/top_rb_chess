@@ -80,6 +80,18 @@ class ChessMoves
       out << p
     end
 
+    # En-passant
+    if piece.side == 1 && pos[1] == 3 || piece.side == 2 && pos[1] == 4
+      [-1, 1].each do |side_offset|
+        next if pos[0] + side_offset < 0 || pos[0] + side_offset > 7
+
+        pos_side = [pos[0] + side_offset, pos[1]]
+        next if @data.at(pos_side).nil?
+
+        out << [pos[0] + side_offset, pos[1] + offset] if @data.at(pos_side) == @data.en_passant_vulnerable
+      end
+    end
+
     out
   end
 

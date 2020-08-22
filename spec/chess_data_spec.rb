@@ -162,6 +162,22 @@ describe ChessData do
     end
   end
 
+  context "@en_passant_vulnerable stores the last pawn that has jumped two squares" do
+    it "stores it after move has been called" do
+      cd = ChessData.new
+      cd.move_by_str('26-24')
+
+      expect(cd.en_passant_vulnerable.nil?).to be false
+    end
+
+    it "reverts to nil on the next move that is not the two-square pawn jump" do
+      cd = ChessData.new
+      cd.move_by_arr(['26-24', '16-15'])
+
+      expect(cd.en_passant_vulnerable.nil?).to be true
+    end
+  end
+
   describe "#move_by_str" do
     it "parses a move string into from and to coords and moves the pieces" do
       cd = ChessData.new
