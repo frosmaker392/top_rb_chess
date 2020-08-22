@@ -178,6 +178,32 @@ describe ChessData do
     end
   end
 
+  context "@pieces_by_side (hash)" do
+    cd = ChessData.new
+
+    it "stores every piece of each side into an array, which is a value in the hash" do
+      debug_str_arr = cd.pieces_by_side[1].map { |piece| piece.debug_str }.sort
+      expect(debug_str_arr).to eql(['B1', 'B1', 'K1', 'N1', 'N1', 
+                                    'P1', 'P1', 'P1', 'P1', 'P1', 
+                                    'P1', 'P1', 'P1', 'Q1', 'R1', 
+                                    'R1'])
+    end
+
+    it "removes a piece once that piece gets captured" do
+      cd.move_by_str('x06')
+      debug_str_arr = cd.pieces_by_side[1].map { |piece| piece.debug_str }.sort
+      expect(debug_str_arr).to eql(['B1', 'B1', 'K1', 'N1', 'N1', 
+                                    'P1', 'P1', 'P1', 'P1', 'P1', 
+                                    'P1', 'P1', 'Q1', 'R1', 'R1'])
+      
+      debug_str_arr2 = cd.pieces_by_side[2].map { |piece| piece.debug_str }.sort
+      expect(debug_str_arr2).to eql(['B2', 'B2', 'K2', 'N2', 'N2', 
+                                    'P2', 'P2', 'P2', 'P2', 'P2', 
+                                    'P2', 'P2', 'P2', 'Q2', 'R2', 
+                                    'R2'])
+    end
+  end
+
   describe "#move_by_str" do
     it "parses a move string into from and to coords and moves the pieces" do
       cd = ChessData.new
@@ -248,6 +274,35 @@ describe ChessData do
                                   "          N1    \n"\
                                   "P1P1P1P1  P1P1P1\n"\
                                   "R1N1B1Q1K1    R1\n")
+    end
+  end
+
+  describe "#place" do
+    cd = ChessData.new
+
+    it "places a chess piece at position" do
+      cd.place(ChessPiece.new('P', 2), [1, 5])
+      cd.place(ChessPiece.new('P', 2), [2, 5])
+      expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                  "P2P2P2P2P2P2P2P2\n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "  P2P2          \n"\
+                                  "P1P1P1P1P1P1P1P1\n"\
+                                  "R1N1B1Q1K1B1N1R1\n")
+    end
+
+    it "does nothing if that position in nil" do
+      cd.place(ChessPiece.new('N', 1), [0, 1])
+      expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                  "P2P2P2P2P2P2P2P2\n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "  P2P2          \n"\
+                                  "P1P1P1P1P1P1P1P1\n"\
+                                  "R1N1B1Q1K1B1N1R1\n")
     end
   end
 

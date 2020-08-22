@@ -6,7 +6,7 @@ class ChessPiece
   attr_accessor :position
   attr_accessor :num_of_moves   # Records number of moves it has underwent
 
-  def initialize(notation, side, position)
+  def initialize(notation, side, position = [-1, -1])
     raise "Invalid datatypes!" unless notation.is_a?(String) && side.is_a?(Integer)
 
     @notation = notation
@@ -27,13 +27,16 @@ class ChessData
   attr_reader :captured
   attr_reader :moves
   attr_reader :en_passant_vulnerable    # Denotes the piece that is vulnerable to an en-passant move
+  attr_reader :pieces_by_side
 
   def initialize()
     @grid = Array.new(8) { Array.new(8) {nil} }
-    generate_default_grid
 
     @moves = []
     @captured = []
+    @pieces_by_side = {1 => [], 2 => []}
+
+    generate_default_grid
   end
 
   public
@@ -67,6 +70,16 @@ class ChessData
     @moves << "#{x_f}#{y_f}-#{x_t}#{y_t}"
   end
 
+  # Places a chess piece at position
+  def place(piece, position)
+    return unless at(position).nil?
+
+    piece.position = position
+    @grid[position[1]][position[0]] = piece
+
+    @pieces_by_side[piece.side] << piece
+  end
+
   # Pushes a piece to the captured array and sets the grid element at that position
   # to nil. If explicit is true it records the capture as a move ('x[pos]')
   def capture(piece, explicit = true)
@@ -77,6 +90,8 @@ class ChessData
     piece.position = [-1, -1]
 
     @moves << "x#{pos[0]}#{pos[1]}" if explicit
+
+    @pieces_by_side[piece.side].delete(piece)
   end
 
   # Returns the element of grid
@@ -139,28 +154,22 @@ class ChessData
   def generate_default_grid
     # Place pawns at 2nd and 7th row
     8.times do |x|
-      @grid[1][x] = ChessPiece.new('P', 2, [-1, -1])
-      @grid[6][x] = ChessPiece.new('P', 1, [-1, -1])
+      place(ChessPiece.new('P', 2), [x, 1])
+      place(ChessPiece.new('P', 1), [x, 6])
     end
 
     # Place other pieces
     2.times do |y|
-      @grid[-y][0] = ChessPiece.new('R', 2 - y, [-1, -1])
-      @grid[-y][1] = ChessPiece.new('N', 2 - y, [-1, -1])
-      @grid[-y][2] = ChessPiece.new('B', 2 - y, [-1, -1])
-      @grid[-y][3] = ChessPiece.new('Q', 2 - y, [-1, -1])
-      @grid[-y][4] = ChessPiece.new('K', 2 - y, [-1, -1])
-      @grid[-y][5] = ChessPiece.new('B', 2 - y, [-1, -1])
-      @grid[-y][6] = ChessPiece.new('N', 2 - y, [-1, -1])
-      @grid[-y][7] = ChessPiece.new('R', 2 - y, [-1, -1])
-    end
+      y_grid = (y == 1 ? 7 : 0)
 
-    8.times do |y|
-      8.times do |x|
-        next if @grid[y][x].nil?
-
-        @grid[y][x].position = [x, y]
-      end
+      place(ChessPiece.new('R', 2 - y), [0, y_grid])
+      place(ChessPiece.new('N', 2 - y), [1, y_grid])
+      place(ChessPiece.new('B', 2 - y), [2, y_grid])
+      place(ChessPiece.new('Q', 2 - y), [3, y_grid])
+      place(ChessPiece.new('K', 2 - y), [4, y_grid])
+      place(ChessPiece.new('B', 2 - y), [5, y_grid])
+      place(ChessPiece.new('N', 2 - y), [6, y_grid])
+      place(ChessPiece.new('R', 2 - y), [7, y_grid])
     end
   end
 
