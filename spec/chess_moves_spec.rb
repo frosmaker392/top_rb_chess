@@ -54,7 +54,7 @@ describe ChessMoves do
         end
 
         it "with an enemy piece on the front-diagonal adjacent square" do
-          cm.data.move_by_arr(['26-24', '11-13'])
+          cm.data.actions_from_arr(['26-24', '11-13'])
           cm.evaluate_moves
           expect(cm.possible_moves_at([2, 4])).to eql([[2, 3], [1, 3]])
         end
@@ -62,19 +62,19 @@ describe ChessMoves do
         cm2 = ChessMoves.new(ChessData.new)
 
         it "with two enemy pieces adjacent to it" do
-          cm2.data.move_by_arr(['10-43', '61-63', '56-54'])
+          cm2.data.actions_from_arr(['10-43', '61-63', '56-54'])
           cm2.evaluate_moves
           expect(cm2.possible_moves_at([5, 4]).sort).to eql([[4, 3], [5, 3], [6, 3]])
         end
 
         it "with a piece blocking it directly" do
-          cm2.data.move_by_str("17-25")
+          cm2.data.action_from_str("17-25")
           cm2.evaluate_moves
           expect(cm2.possible_moves_at([2, 6])).to eql([])
         end
 
         it "with a friendly piece at its front-diagonal-adjacent square" do
-          cm2.data.move_by_arr(['31-32', '27-23'])
+          cm2.data.actions_from_arr(['31-32', '27-23'])
           cm2.evaluate_moves
           expect(cm2.possible_moves_at([3, 2]).sort).to eql([[2, 3], [3, 3]])
         end
@@ -82,7 +82,7 @@ describe ChessMoves do
 
       it "of a knight" do
         cm = ChessMoves.new(ChessData.new)
-        cm.data.move_by_arr(['10-33', '67-44'])
+        cm.data.actions_from_arr(['10-33', '67-44'])
         cm.evaluate_moves
         
         expect(cm.possible_moves_at([3, 3]).sort).to eql([[1,2], [1,4], [2,5], [4,5], 
@@ -124,7 +124,7 @@ describe ChessMoves do
 
       it "of a king" do
         cm = ChessMoves.new(ChessData.new)
-        cm.data.move_by_arr(['47-44', '46-45', '31-33'])
+        cm.data.actions_from_arr(['47-44', '46-45', '31-33'])
         cm.evaluate_moves
 
         expect(cm.possible_moves_at([4, 4]).sort).to eql([[3,3], [3,4], [3,5], [4,3], 
@@ -137,14 +137,14 @@ describe ChessMoves do
       cm = ChessMoves.new(cd)
 
       it "positive for a pawn that has jumped two squares in a move" do
-        cd.move_by_arr(['11-13', '13-14', '16-15', '26-24'])
+        cd.actions_from_arr(['11-13', '13-14', '16-15', '26-24'])
         cm.evaluate_moves
 
         expect(cm.possible_moves_at([1, 4]).sort).to eql([[2,5]])
       end
 
       it "negative for a pawn that has moved by two in two moves" do
-        cd.move_by_arr(['56-54', '54-53', '61-62', '62-63'])
+        cd.actions_from_arr(['56-54', '54-53', '61-62', '62-63'])
         cm.evaluate_moves
 
         expect(cm.possible_moves_at([5, 3]).include?([6, 2])).to be false

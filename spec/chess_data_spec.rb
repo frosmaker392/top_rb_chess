@@ -3,12 +3,8 @@ require './lib/chess_data.rb'
 describe ChessPiece do
   context "Initialise ChessPiece class" do
     it "initialises ChessPiece with notation and side" do
-      cp = ChessPiece.new('K', 1, [-1, -1])
+      cp = ChessPiece.new('K', 1)
       expect(cp.debug_str).to eql('K1')
-    end
-
-    it "raises error if wrong datatypes are used" do
-      expect{ ChessPiece.new('N', 1.5, [-1, -1]) }.to raise_error("Invalid datatypes!")
     end
   end
 end
@@ -146,33 +142,41 @@ describe ChessData do
     end
   end
 
-  context "@moves array stored all moves since the default layout" do
-    it "stores a string in the form of '[from]-[to]' (no spaces)" do
+  context "@actions array stores all actions (moves, captures, promotions) since the default layout" do
+    it "stores a move in the form of '[from]-[to]' (no spaces)" do
       cd = ChessData.new
       cd.move_piece([2, 1], [2, 3])
-      expect(cd.moves).to eql(['21-23'])
+      expect(cd.actions).to eql(['21-23'])
     end
 
-    it "stores multiple moves" do
+    it "stores multiple actions" do
       cd = ChessData.new
       cd.move_piece([2, 1], [2, 3])
       cd.move_piece([1, 1], [1, 2])
       cd.move_piece([5, 6], [5, 4])
-      expect(cd.moves).to eql(['21-23', '11-12', '56-54'])
+      expect(cd.actions).to eql(['21-23', '11-12', '56-54'])
+    end
+
+    it "stores captures and promotions correctly" do
+      cd = ChessData.new
+      cd.capture(cd.at([2, 0]))
+      cd.promote(cd.at([6, 6]))
+
+      expect(cd.actions).to eql(['x20', 'p66Q'])
     end
   end
 
   context "@en_passant_vulnerable stores the last pawn that has jumped two squares" do
     it "stores it after move has been called" do
       cd = ChessData.new
-      cd.move_by_str('26-24')
+      cd.action_from_str('26-24')
 
       expect(cd.en_passant_vulnerable.nil?).to be false
     end
 
     it "reverts to nil on the next move that is not the two-square pawn jump" do
       cd = ChessData.new
-      cd.move_by_arr(['26-24', '16-15'])
+      cd.actions_from_arr(['26-24', '16-15'])
 
       expect(cd.en_passant_vulnerable.nil?).to be true
     end
@@ -190,7 +194,7 @@ describe ChessData do
     end
 
     it "removes a piece once that piece gets captured" do
-      cd.move_by_str('x06')
+      cd.action_from_str('x06')
       debug_str_arr = cd.pieces_by_side[1].map { |piece| piece.debug_str }.sort
       expect(debug_str_arr).to eql(['B1', 'B1', 'K1', 'N1', 'N1', 
                                     'P1', 'P1', 'P1', 'P1', 'P1', 
@@ -204,10 +208,10 @@ describe ChessData do
     end
   end
 
-  describe "#move_by_str" do
+  describe "#action_from_str" do
     it "parses a move string into from and to coords and moves the pieces" do
       cd = ChessData.new
-      cd.move_by_str("16-14")
+      cd.action_from_str("16-14")
       expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
                                   "P2P2P2P2P2P2P2P2\n"\
                                   "                \n"\
@@ -220,8 +224,8 @@ describe ChessData do
 
     it "moves pieces successively" do
       cd = ChessData.new
-      cd.move_by_str("30-54")
-      cd.move_by_str("07-05")
+      cd.action_from_str("30-54")
+      cd.action_from_str("07-05")
       expect(cd.debug_str).to eql("R2N2B2  K2B2N2R2\n"\
                                   "P2P2P2P2P2P2P2P2\n"\
                                   "                \n"\
@@ -232,25 +236,10 @@ describe ChessData do
                                   "  N1B1Q1K1B1N1R1\n")
     end
 
-    it "raises error if string has the wrong length" do
-      cd = ChessData.new
-      expect{ cd.move_by_str('1234') }.to raise_error("Invalid format for move string!")
-    end
-
-    it "raises error if string is in wrong format" do
-      cd = ChessData.new
-      expect{ cd.move_by_str('1-234') }.to raise_error("Invalid format for move string!")
-    end
-
-    it "raises error if string has a different separator than \'-\'" do
-      cd = ChessData.new
-      expect{ cd.move_by_str('12_34') }.to raise_error("Invalid format for move string!")
-    end
-
     it "executes a capture if the string has the format 'x[pos]'" do
       cd = ChessData.new
-      cd.move_by_str("x61")
-      cd.move_by_str("x77")
+      cd.action_from_str("x61")
+      cd.action_from_str("x77")
       expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
                                   "P2P2P2P2P2P2  P2\n"\
                                   "                \n"\
@@ -263,7 +252,7 @@ describe ChessData do
     
     it "executes a promotion for string of format 'p[pos][new_notation]'" do
       cd = ChessData.new
-      cd.move_by_str("p71Q")
+      cd.action_from_str("p71Q")
       expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
                                   "P2P2P2P2P2P2P2Q2\n"\
                                   "                \n"\
@@ -273,12 +262,22 @@ describe ChessData do
                                   "P1P1P1P1P1P1P1P1\n"\
                                   "R1N1B1Q1K1B1N1R1\n")
     end
+
+    it "raises error if string is in wrong format (move)" do
+      cd = ChessData.new
+      expect{ cd.action_from_str('1-234') }.to raise_error("Invalid format for move string!")
+    end
+
+    it "raises error if string is in wrong format (capture)" do
+      cd = ChessData.new
+      expect{ cd.action_from_str('x-12') }.to raise_error("Invalid format for move string!")
+    end
   end
 
-  describe "#move_by_arr" do
-    it "moves pieces one-by-one successively according to the array" do
+  describe "#actions_from_arr" do
+    it "executes all the actions given in an array consecutively" do
       cd = ChessData.new
-      cd.move_by_arr(['46-44', '41-43', '67-55', '10-22', '57-13', '01-02'])
+      cd.actions_from_arr(['46-44', '41-43', '67-55', '10-22', '57-13', '01-02'])
       expect(cd.debug_str).to eql("R2  B2Q2K2B2N2R2\n"\
                                   "  P2P2P2  P2P2P2\n"\
                                   "P2  N2          \n"\
@@ -324,9 +323,9 @@ describe ChessData do
   end
 
   context "JSON serialization" do
-    it "can serialize the @moves variable into JSON and rebuild the ChessData object from the JSON" do
+    it "can serialize the @actions variable into JSON and rebuild the ChessData object from the JSON" do
       cd = ChessData.new
-      cd.move_by_arr(['46-44', '41-43', '67-55', '10-22', '57-13', '01-02'])
+      cd.actions_from_arr(['46-44', '41-43', '67-55', '10-22', '57-13', '01-02'])
       json_str = cd.to_json
 
       cd2 = ChessData.from_json(json_str)

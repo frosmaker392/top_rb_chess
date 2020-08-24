@@ -7,8 +7,6 @@ class ChessPiece
   attr_accessor :num_of_moves   # Records number of moves it has underwent
 
   def initialize(notation, side, position = [-1, -1])
-    raise "Invalid datatypes!" unless notation.is_a?(String) && side.is_a?(Integer)
-
     @notation = notation
     @side = side
     @position = position
@@ -25,14 +23,14 @@ end
 class ChessData
   attr_reader :grid         # To access correctly : @grid[y][x] / @grid[col][row]
   attr_reader :captured
-  attr_reader :moves
+  attr_reader :actions
   attr_reader :en_passant_vulnerable    # Denotes the piece that is vulnerable to an en-passant move
   attr_reader :pieces_by_side
 
   def initialize()
     @grid = Array.new(8) { Array.new(8) {nil} }
 
-    @moves = []
+    @actions = []
     @captured = []
     @pieces_by_side = {1 => [], 2 => []}
 
@@ -67,7 +65,7 @@ class ChessData
 
     @grid[y_f][x_f] = nil
 
-    @moves << "#{x_f}#{y_f}-#{x_t}#{y_t}"
+    @actions << "#{x_f}#{y_f}-#{x_t}#{y_t}"
   end
 
   # Pushes a piece to the captured array and sets the grid element at that position
@@ -79,9 +77,9 @@ class ChessData
     @captured << piece
     piece.position = [-1, -1]
 
-    @moves << "x#{pos[0]}#{pos[1]}" if explicit
-
     @pieces_by_side[piece.side].delete(piece)
+
+    @actions << "x#{pos[0]}#{pos[1]}" if explicit
   end
 
   # Returns the element of grid
@@ -102,13 +100,13 @@ class ChessData
     @pieces_by_side[piece.side].delete(piece)
     @pieces_by_side[piece.side] << new_piece
 
-    @moves << "p#{pos[0]}#{pos[1]}#{to_type}"
+    @actions << "p#{pos[0]}#{pos[1]}#{to_type}"
   end
 
-  # Executes a move according to str with format "[x_from][y_from]-[x_to][y_to]"
+  # Executes an action from a string of format (for moves) "[x_from][y_from]-[x_to][y_to]"
   # or of the format (for captures) "x[x][y]"
   # or of the format (for promotions) "p[x][y][new_notation]"
-  def move_by_str(str)
+  def action_from_str(str)
     # rgx_matches[i], 0 - from-to-move, 1 - capture, 2 - promotion
     rgx_matches = [str.match(/^[0-7]{2}-[0-7]{2}$/), str.match(/^x[0-7]{2}$/), str.match(/^p[0-7]{2}[NBRQ]$/)]
 
@@ -140,10 +138,8 @@ class ChessData
     end
   end
   
-  def move_by_arr(arr)
-    arr.each do |move_str|
-      move_by_str(move_str)
-    end
+  def actions_from_arr(arr)
+    arr.each { |move_str| action_from_str(move_str) }
   end
 
   # JSON Methods
@@ -153,10 +149,10 @@ class ChessData
 
   def ChessData.from_json(json_str)
     hash = JSON.parse(json_str)
-    return if hash["moves"].nil?
+    return if hash["actions"].nil?
 
     cd = ChessData.new
-    cd.move_by_arr(hash["moves"])
+    cd.actions_from_arr(hash["actions"])
 
     cd
   end
@@ -210,7 +206,7 @@ class ChessData
 
   def as_json(options = {})
     {
-      moves: @moves
+      actions: @actions
     }
   end
 end
