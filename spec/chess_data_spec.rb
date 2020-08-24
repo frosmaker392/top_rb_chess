@@ -260,6 +260,19 @@ describe ChessData do
                                   "P1P1P1P1P1P1P1P1\n"\
                                   "R1N1B1Q1K1B1N1  \n")
     end
+    
+    it "executes a promotion for string of format 'p[pos][new_notation]'" do
+      cd = ChessData.new
+      cd.move_by_str("p71Q")
+      expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                  "P2P2P2P2P2P2P2Q2\n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "P1P1P1P1P1P1P1P1\n"\
+                                  "R1N1B1Q1K1B1N1R1\n")
+    end
   end
 
   describe "#move_by_arr" do
@@ -277,32 +290,36 @@ describe ChessData do
     end
   end
 
-  describe "#place" do
-    cd = ChessData.new
-
-    it "places a chess piece at position" do
-      cd.place(ChessPiece.new('P', 2), [1, 5])
-      cd.place(ChessPiece.new('P', 2), [2, 5])
+  describe "#promote" do
+    it "promotes a pawn to a queen by default, ignoring the position of the pawn" do
+      cd = ChessData.new
+      cd.promote(cd.at([1, 1]))
       expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
-                                  "P2P2P2P2P2P2P2P2\n"\
+                                  "P2Q2P2P2P2P2P2P2\n"\
                                   "                \n"\
                                   "                \n"\
                                   "                \n"\
-                                  "  P2P2          \n"\
+                                  "                \n"\
                                   "P1P1P1P1P1P1P1P1\n"\
                                   "R1N1B1Q1K1B1N1R1\n")
     end
 
-    it "does nothing if that position in nil" do
-      cd.place(ChessPiece.new('N', 1), [0, 1])
+    it "promotes a pawn to a desired piece if stated" do
+      cd = ChessData.new
+      cd.promote(cd.at([1, 1]), 'N')
       expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
-                                  "P2P2P2P2P2P2P2P2\n"\
+                                  "P2N2P2P2P2P2P2P2\n"\
                                   "                \n"\
                                   "                \n"\
                                   "                \n"\
-                                  "  P2P2          \n"\
+                                  "                \n"\
                                   "P1P1P1P1P1P1P1P1\n"\
                                   "R1N1B1Q1K1B1N1R1\n")
+    end
+
+    it "raises error if the given piece is nil/other than a pawn" do
+      cd = ChessData.new
+      expect{ cd.promote(cd.at([2, 7])) }.to raise_error("Intended piece is nil/not a pawn!")
     end
   end
 

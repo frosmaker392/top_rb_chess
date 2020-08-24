@@ -70,16 +70,6 @@ class ChessData
     @moves << "#{x_f}#{y_f}-#{x_t}#{y_t}"
   end
 
-  # Places a chess piece at position
-  def place(piece, position)
-    return unless at(position).nil?
-
-    piece.position = position
-    @grid[position[1]][position[0]] = piece
-
-    @pieces_by_side[piece.side] << piece
-  end
-
   # Pushes a piece to the captured array and sets the grid element at that position
   # to nil. If explicit is true it records the capture as a move ('x[pos]')
   def capture(piece, explicit = true)
@@ -99,19 +89,54 @@ class ChessData
     @grid[position[1]][position[0]]
   end
 
-  # Executes a move according to str with format "[x_from][y_from]-[x_to][y_to]"
-  def move_by_str(str)
-    rgx_match_move = str.match(/^[0-7]{2}-[0-7]{2}$/)
-    rgx_match_cap = str.match(/^x[0-7]{2}$/)
-    raise "Invalid format for move string!" if rgx_match_move.nil? && rgx_match_cap.nil?
+  def promote(piece, to_type = 'Q')
+    raise "Intended piece is nil/not a pawn!" unless piece.notation == 'P'
 
-    unless rgx_match_move.nil?
+    pos = piece.position
+
+    new_piece = ChessPiece.new(to_type, piece.side, pos)
+    @grid[pos[1]][pos[0]] = new_piece
+
+    piece.position = [-1, -1]
+
+    @pieces_by_side[piece.side].delete(piece)
+    @pieces_by_side[piece.side] << new_piece
+
+    @moves << "p#{pos[0]}#{pos[1]}#{to_type}"
+  end
+
+  # Executes a move according to str with format "[x_from][y_from]-[x_to][y_to]"
+  # or of the format (for captures) "x[x][y]"
+  # or of the format (for promotions) "p[x][y][new_notation]"
+  def move_by_str(str)
+    # rgx_matches[i], 0 - from-to-move, 1 - capture, 2 - promotion
+    rgx_matches = [str.match(/^[0-7]{2}-[0-7]{2}$/), str.match(/^x[0-7]{2}$/), str.match(/^p[0-7]{2}[NBRQ]$/)]
+
+    i = 0
+    while rgx_matches[i].nil? && i < 3 
+      i += 1
+    end
+
+    case i
+    when 0
+      str = rgx_matches[i][0]
       from = [str[0].to_i, str[1].to_i]
       to = [str[3].to_i, str[4].to_i]
+
       move_piece(from, to)
-    else
+    when 1
+      str = rgx_matches[i][0]
       pos = [str[1].to_i, str[2].to_i]
+
       capture(at(pos))
+    when 2
+      str = rgx_matches[i][0]
+      pos = [str[1].to_i, str[2].to_i]
+      to_type = str[3]
+
+      promote(at(pos), to_type)
+    else
+      raise "Invalid format for move string!"
     end
   end
   
@@ -171,6 +196,16 @@ class ChessData
       place(ChessPiece.new('N', 2 - y), [6, y_grid])
       place(ChessPiece.new('R', 2 - y), [7, y_grid])
     end
+  end
+
+  # Places a chess piece at position
+  def place(piece, position)
+    return unless at(position).nil?
+
+    piece.position = position
+    @grid[position[1]][position[0]] = piece
+
+    @pieces_by_side[piece.side] << piece
   end
 
   def as_json(options = {})
