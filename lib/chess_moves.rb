@@ -25,7 +25,7 @@ class ChessMoves
   def evaluate_moves
     8.times do |y|
       8.times do |x|
-        piece = data.grid[y][x]
+        piece = @data.grid[y][x]
         next if piece.nil?
 
         case piece.notation
