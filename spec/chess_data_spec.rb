@@ -322,6 +322,71 @@ describe ChessData do
     end
   end
 
+  describe "#revert" do
+    context "reverts the last move" do
+      it "that is not a capture" do
+        cd = ChessData.new
+        cd.actions_from_arr(['26-24', '36-35'])
+        cd.revert
+        expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                    "P2P2P2P2P2P2P2P2\n"\
+                                    "                \n"\
+                                    "                \n"\
+                                    "    P1          \n"\
+                                    "                \n"\
+                                    "P1P1  P1P1P1P1P1\n"\
+                                    "R1N1B1Q1K1B1N1R1\n")
+        expect(cd.actions).to eql(['26-24'])
+      end
+
+      it "that is a capture" do
+        cd = ChessData.new
+        cd.actions_from_arr(['26-24', '31-33', '24-33'])
+        cd.revert
+        expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                    "P2P2P2  P2P2P2P2\n"\
+                                    "                \n"\
+                                    "      P2        \n"\
+                                    "    P1          \n"\
+                                    "                \n"\
+                                    "P1P1  P1P1P1P1P1\n"\
+                                    "R1N1B1Q1K1B1N1R1\n")
+        expect(cd.actions).to eql(['26-24', '31-33'])
+      end
+    end
+
+    it "reverts the last move that prompts an explicit capture (en-passant)" do
+      cd = ChessData.new
+      cd.actions_from_arr(['26-24', '61-62', '24-23', '31-33', '23-32', 'x33'])
+      cd.revert
+      expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                  "P2P2P2  P2P2  P2\n"\
+                                  "            P2  \n"\
+                                  "    P1P2        \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "P1P1  P1P1P1P1P1\n"\
+                                  "R1N1B1Q1K1B1N1R1\n")
+      expect(cd.actions).to eql(['26-24', '61-62', '24-23', '31-33'])
+      expect(cd.en_passant_vulnerable.nil?).to be false
+    end
+
+    it "reverts the last move that prompts a promotion" do
+      cd = ChessData.new
+      cd.actions_from_arr(['x66', 'x67', '61-63', '63-64', '64-65', '65-66', '66-67', 'p67Q'])
+      cd.revert
+      expect(cd.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                  "P2P2P2P2P2P2  P2\n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "                \n"\
+                                  "P1P1P1P1P1P1P2P1\n"\
+                                  "R1N1B1Q1K1B1  R1\n")
+      expect(cd.actions).to eql(['x66', 'x67', '61-63', '63-64', '64-65', '65-66'])
+    end
+  end
+
   context "JSON serialization" do
     it "can serialize the @actions variable into JSON and rebuild the ChessData object from the JSON" do
       cd = ChessData.new
