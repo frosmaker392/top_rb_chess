@@ -34,6 +34,10 @@ class ChessData
     @captured = []
     @pieces_by_side = {1 => [], 2 => []}
 
+    # Additional variables for revert
+    @is_last_move_capture = false
+    @en_passant_vulnerable_prev = nil
+
     generate_default_grid
   end
 
@@ -51,13 +55,15 @@ class ChessData
     return if x_t > 7 || x_t < 0 || y_t > 7 || y_t < 0
     return if at(from).nil?
 
+    @en_passant_vulnerable_prev = @en_passant_vulnerable
     @en_passant_vulnerable = nil
     if y_f == 1 && y_t == 3 || y_f == 6 && y_t == 4
       piece = at(from)
       @en_passant_vulnerable = piece if piece.notation == 'P'
     end
     
-    capture(at(to), false) unless at(to).nil?
+    @is_last_move_capture = !at(to).nil?
+    capture(at(to), false) if @is_last_move_capture
     
     @grid[y_t][x_t] = at(from)
     at(to).num_of_moves += 1
@@ -87,8 +93,10 @@ class ChessData
     @grid[position[1]][position[0]]
   end
 
+  # Promotes a pawn to a queen by default, or to a desired type (other than pawn and king)
   def promote(piece, to_type = 'Q')
     raise "Intended piece is nil/not a pawn!" unless piece.notation == 'P'
+    raise "Cannot promote to king or pawn!" if to_type == 'K' || to_type == 'P'
 
     pos = piece.position
 
@@ -101,6 +109,57 @@ class ChessData
     @pieces_by_side[piece.side] << new_piece
 
     @actions << "p#{pos[0]}#{pos[1]}#{to_type}"
+  end
+
+  # Reverts the last move and undoes the last capture or promotion after it
+  def revert
+    last_action = @actions.pop
+    return if last_action.nil?
+
+    # If last action is a capture, then place that captured piece back
+    if !last_action.match(/^x[0-7]{2}$/).nil?
+      captured_piece = @captured.pop
+      pos = [last_action[1].to_i, last_action[2].to_i]
+
+      @pieces_by_side[captured_piece.side] << captured_piece
+      place(captured_piece, pos)
+
+      last_action = @actions.pop            # Set the last action to the move before
+      
+    # If last action is a promotion, then reverse it
+    elsif !last_action.match(/^p[0-7]{2}[NBRQ]$/).nil?
+      pos = [last_action[1].to_i, last_action[2].to_i]
+      pawn_before = ChessPiece.new('P', at(pos).side, pos)
+
+      @pieces_by_side[pawn_before.side].delete(at(pos))
+      @pieces_by_side[pawn_before.side] << pawn_before
+
+      @grid[pos[1]][pos[0]] = pawn_before
+
+      last_action = @actions.pop            # Set the last action to the move before
+    end
+
+    # Assuming the last action is a move, move the piece back to the position before
+    from = [last_action[3].to_i, last_action[4].to_i]
+    to = [last_action[0].to_i, last_action[1].to_i]
+
+    at(from).position = to
+    @grid[to[1]][to[0]] = at(from)
+    @grid[from[1]][from[0]] = nil
+
+    # Place the piece back if the last move is a capture
+    if @is_last_move_capture
+      captured_piece = @captured.pop
+
+      @pieces_by_side[captured_piece.side] << captured_piece
+      place(captured_piece, from)
+
+      @is_last_move_capture = false
+    end
+
+    # Update en_passant_vulnerable to the previous value
+    @en_passant_vulnerable = @en_passant_vulnerable_prev
+    @en_passant_vulnerable_prev = nil
   end
 
   # Executes an action from a string of format (for moves) "[x_from][y_from]-[x_to][y_to]"
