@@ -1,4 +1,5 @@
 require './lib/chess_data.rb'
+require 'set'
 
 class ChessMoves
   attr_reader :data
