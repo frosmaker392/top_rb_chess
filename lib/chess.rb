@@ -29,7 +29,7 @@ class Chess
     end
 
     raise "Cannot move #{PIECE_NAME[intended_move.notation]} to #{intended_move.board_pos}!" if valid_pieces == []
-    raise "More than one #{PIECE_NAME[intended_move.notation]} can move to #{intended_move.board_pos}!" if valid_pieces.length > 1
+    raise "#{valid_pieces.length} #{PIECE_NAME[intended_move.notation]}s could move to #{intended_move.board_pos}!" if valid_pieces.length > 1
 
     @chess_data.move_piece(valid_pieces[0].position, intended_move.target_pos)
 

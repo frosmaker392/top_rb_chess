@@ -134,6 +134,32 @@ describe Chess do
           c.chess_moves.evaluate_moves
           expect{ c.try_move('Bb5') }.to raise_error("Cannot move bishop to b5!")
         end
+
+        it "when that piece does not exist on that side" do
+          c = Chess.new(ChessData.new)
+          c.chess_data.actions_from_arr(['x17', 'x67'])
+          c.chess_moves.evaluate_moves
+          expect{ c.try_move('Nc3') }.to raise_error("No knights found on white's side!")
+        end
+      end
+
+      context "raises error when more than one piece can make that move" do
+        it "for two pieces" do
+          cd = ChessData.new
+          cd.actions_from_arr(['21-25'])
+          c = Chess.new(cd)
+          c.chess_moves.evaluate_moves
+          expect{ c.try_move('c3') }.to raise_error("2 pawns could move to c3!")
+        end
+
+        it "for three pieces" do
+          cd = ChessData.new
+          cd.actions_from_arr(['x00', 'x10', 'x20', 'x01', 'x11', 'x21'])
+          cd.actions_from_arr(['06-00', 'p00Q','16-10', 'p10Q','26-20', 'p20Q'])
+          c = Chess.new(cd)
+          c.chess_moves.evaluate_moves
+          expect{ c.try_move('Qb7') }.to raise_error("3 queens could move to b7!")
+        end
       end
     end
   end
