@@ -114,5 +114,27 @@ describe Chess do
                                               "R1N1B1  K1B1N1R1\n")
       end
     end
+
+    context "error handling :" do
+      it "raises error for invalid algebraic strings (includes empty)" do
+        c = Chess.new(ChessData.new)
+        c.chess_moves.evaluate_moves
+        expect{ c.try_move('a2Q') }.to raise_error("Invalid string format!")
+      end
+
+      context "raises error for a move that cannot be carried out" do
+        it "for a pawn" do
+          c = Chess.new(ChessData.new)
+          c.chess_moves.evaluate_moves
+          expect{ c.try_move('b5') }.to raise_error("Cannot move pawn to b5!")
+        end
+
+        it "for another piece" do
+          c = Chess.new(ChessData.new)
+          c.chess_moves.evaluate_moves
+          expect{ c.try_move('Bb5') }.to raise_error("Cannot move bishop to b5!")
+        end
+      end
+    end
   end
 end
