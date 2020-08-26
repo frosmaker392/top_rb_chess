@@ -1,6 +1,6 @@
 require './lib/chess_moves.rb'
 
-IntendedMove = Struct.new(:notation, :target_pos, :board_pos)
+IntendedMove = Struct.new(:notation, :target_pos, :board_pos, :search_pos)
 
 PIECE_NAME = { 'P' => 'pawn', 'N' => 'knight', 'B' => 'bishop',
                'R' => 'rook', 'Q' => 'queen', 'K' => 'king' }
@@ -20,12 +20,18 @@ class Chess
 
   def try_move(alg_string)
     intended_move = parse_algebra(alg_string)
+    search_pos = intended_move.search_pos
 
     valid_pieces = []
     @chess_data.pieces_by_side[@current_side].each do |piece|
       next unless piece.notation == intended_move.notation
+      next unless @chess_moves.possible_moves[piece].include?(intended_move.target_pos)
+      
+      pos = piece.position
+      if search_pos[0] > 0 then next unless pos[0] == search_pos[0] end
+      if search_pos[1] > 0 then next unless pos[1] == search_pos[1] end
 
-      valid_pieces << piece if @chess_moves.possible_moves[piece].include?(intended_move.target_pos)
+      valid_pieces << piece
     end
 
     raise "Cannot move #{PIECE_NAME[intended_move.notation]} to #{intended_move.board_pos}!" if valid_pieces == []
@@ -42,26 +48,31 @@ class Chess
   # Parses the chess algebra string in the form of [notation][board_pos]
   # Returns a struct that stores the piece notation and target position
   def parse_algebra(alg_string)
-    raise "Invalid string format!" if alg_string.match(/^[PNBRQK]?[a-h][1-8]$/).nil?
+    raise "Invalid string format!" if alg_string.match(/^[PNBRQK]?[a-h]?[1-8]?[a-h][1-8]$/).nil?
 
-    is_type_denoted = alg_string[0].ord < 97
+    alg_arr = alg_string.split('')
 
     # If there is no type denoted then set expected type to pawn by default
-    expected_type = is_type_denoted ? alg_string[0] : 'P'
-    pos_string = ''
-
-    if is_type_denoted then pos_string << alg_string[1] << alg_string[2]
-    else pos_string << alg_string[0] << alg_string[1] end
+    expected_type = alg_arr[0].ord < 97 ? alg_arr.shift : 'P'
+    pos_arr = [].unshift(alg_arr.pop).unshift(alg_arr.pop)
     
-    pos = parse_position(pos_string)
-    IntendedMove.new(expected_type, pos, pos_string)
+    pos = parse_position(pos_arr)
+
+    unless alg_arr == []
+      alg_arr.unshift(nil) if alg_arr[0].ord < 97
+    end
+
+    search_pos = parse_position(alg_arr)
+
+    IntendedMove.new(expected_type, pos, pos_arr.join(''), search_pos)
   end
 
   # Returns the position compatible with chess_data in the form of [col, row]
-  # Expects a string that satisfies the regex /^[a-h][1-8]$/ (no error if otherwise)
-  def parse_position(pos_string)
-    col = pos_string[0].ord - 97
-    row = 8 - pos_string[1].to_i
+  # Expects an array that describes the board position ([[file], [rank]])
+  # If one of them is nil then it that would be set as -1
+  def parse_position(pos_arr)
+    col = pos_arr[0].nil? ? -1 : pos_arr[0].ord - 97
+    row = pos_arr[1].nil? ? -1 : 8 - pos_arr[1].to_i
     [col, row]
   end
 end

@@ -115,6 +115,56 @@ describe Chess do
       end
     end
 
+    context "special functions :" do
+      it "moves the specific piece given the file letter" do
+        cd = ChessData.new
+        cd.actions_from_arr(['21-25'])
+        c = Chess.new(cd)
+        c.chess_moves.evaluate_moves
+        c.try_move('bc3')
+        expect(c.chess_data.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                              "P2P2  P2P2P2P2P2\n"\
+                                              "                \n"\
+                                              "                \n"\
+                                              "                \n"\
+                                              "    P1          \n"\
+                                              "P1  P1P1P1P1P1P1\n"\
+                                              "R1N1B1Q1K1B1N1R1\n")
+      end
+
+      it "moves the specific piece given the rank number" do
+        cd = ChessData.new
+        cd.actions_from_arr(['07-72', '77-75'])
+        c = Chess.new(cd)
+        c.chess_moves.evaluate_moves
+        c.try_move('R3h5')
+        expect(c.chess_data.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                              "P2P2P2P2P2P2P2P2\n"\
+                                              "              R1\n"\
+                                              "              R1\n"\
+                                              "                \n"\
+                                              "                \n"\
+                                              "P1P1P1P1P1P1P1P1\n"\
+                                              "  N1B1Q1K1B1N1  \n")
+      end
+
+      it "moves the specific piece given the exact position" do
+        cd = ChessData.new
+        cd.actions_from_arr(['66-74', 'p56Q', 'p76Q', 'p74Q'])
+        c = Chess.new(cd)
+        c.chess_moves.evaluate_moves
+        c.try_move('Qh2f4')
+        expect(c.chess_data.debug_str).to eql("R2N2B2Q2K2B2N2R2\n"\
+                                              "P2P2P2P2P2P2P2P2\n"\
+                                              "                \n"\
+                                              "                \n"\
+                                              "          Q1  Q1\n"\
+                                              "                \n"\
+                                              "P1P1P1P1P1Q1    \n"\
+                                              "R1N1B1Q1K1B1N1R1\n")
+      end
+    end
+
     context "error handling :" do
       it "raises error for invalid algebraic strings (includes empty)" do
         c = Chess.new(ChessData.new)
@@ -159,6 +209,14 @@ describe Chess do
           c = Chess.new(cd)
           c.chess_moves.evaluate_moves
           expect{ c.try_move('Qb7') }.to raise_error("3 queens could move to b7!")
+        end
+
+        it "for two pieces (even with a specified file)" do
+          cd = ChessData.new
+          cd.actions_from_arr(['66-74', 'p56Q', 'p76Q', 'p74Q'])
+          c = Chess.new(cd)
+          c.chess_moves.evaluate_moves
+          expect{ c.try_move('Qhf4') }.to raise_error("2 queens could move to f4!")
         end
       end
     end
