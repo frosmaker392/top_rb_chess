@@ -26,6 +26,7 @@ class ChessData
   attr_reader :actions
   attr_reader :en_passant_vulnerable    # Denotes the piece that is vulnerable to an en-passant move
   attr_reader :pieces_by_side
+  attr_reader :is_last_move_capture
 
   def initialize()
     @grid = Array.new(8) { Array.new(8) {nil} }

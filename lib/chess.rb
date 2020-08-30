@@ -42,10 +42,21 @@ class Chess
     raise err_cannot_move(intended_move.notation, intended_move.board_pos) if valid_pieces == []
     raise err_more_pieces_can_move(valid_pieces.count, intended_move.notation, intended_move.board_pos) if valid_pieces.length > 1
 
+    en_passant_vulnerable = @chess_data.en_passant_vulnerable
+    pos_before = valid_pieces[0].position
+
     @chess_data.move_piece(valid_pieces[0].position, intended_move.target_pos)
+
+    if intended_move.notation == 'P' && intended_move.target_pos[0] != pos_before[0]
+      @chess_data.capture(en_passant_vulnerable) unless @chess_data.is_last_move_capture
+    end
 
     # Switch sides after every successful move
     @current_side = @current_side == 1 ? 2 : 1
+  end
+
+  def calculate_moves
+    @chess_moves.evaluate_moves
   end
 
   private
