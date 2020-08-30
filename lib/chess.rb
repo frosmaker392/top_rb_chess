@@ -1,11 +1,11 @@
 require './lib/chess_moves.rb'
+require './lib/error_messages.rb'
 
 IntendedMove = Struct.new(:notation, :target_pos, :board_pos, :search_pos)
 
-PIECE_NAME = { 'P' => 'pawn', 'N' => 'knight', 'B' => 'bishop',
-               'R' => 'rook', 'Q' => 'queen', 'K' => 'king' }
-
 class Chess
+  include ChessErrorMessages
+
   attr_reader :chess_data
   attr_reader :chess_moves
 
@@ -23,8 +23,12 @@ class Chess
     search_pos = intended_move.search_pos
 
     valid_pieces = []
+    found_piece_type = false
     @chess_data.pieces_by_side[@current_side].each do |piece|
       next unless piece.notation == intended_move.notation
+
+      found_piece_type = true
+      
       next unless @chess_moves.possible_moves[piece].include?(intended_move.target_pos)
       
       pos = piece.position
@@ -34,8 +38,9 @@ class Chess
       valid_pieces << piece
     end
 
-    raise "Cannot move #{PIECE_NAME[intended_move.notation]} to #{intended_move.board_pos}!" if valid_pieces == []
-    raise "#{valid_pieces.length} #{PIECE_NAME[intended_move.notation]}s could move to #{intended_move.board_pos}!" if valid_pieces.length > 1
+    raise err_no_piece_found(intended_move.notation, @current_side) unless found_piece_type
+    raise err_cannot_move(intended_move.notation, intended_move.board_pos) if valid_pieces == []
+    raise err_more_pieces_can_move(valid_pieces.count, intended_move.notation, intended_move.board_pos) if valid_pieces.length > 1
 
     @chess_data.move_piece(valid_pieces[0].position, intended_move.target_pos)
 
